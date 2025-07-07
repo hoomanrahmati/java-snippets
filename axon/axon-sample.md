@@ -1,7 +1,5 @@
 # A complete example of exception handling in Axon Framework with Spring Boot, covering both Aggregates and Sagas:
 
----
-
 - [Axon Platform](README.md)
 
 ## 1. Maven Dependencies (pom.xml)

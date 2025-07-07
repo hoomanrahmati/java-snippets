@@ -1,7 +1,5 @@
 # Multi-aggregate relationships in Axon
 
----
-
 - [Axon Platform](README.md)
 
 ## 1. Aggregate Design (Master-Detail)

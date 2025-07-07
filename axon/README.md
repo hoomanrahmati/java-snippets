@@ -1,7 +1,5 @@
 ## <h1 style="color:white;">Axon Platform (Axon Server and Framework)</h1>
 
----
-
 - [Sample](axon-sample.md)
 - [Multi Aggregate Sample](axon-multi-aggregate.md)
 
