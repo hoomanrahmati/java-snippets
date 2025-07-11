@@ -53,7 +53,7 @@ eureka.client.service-url.defaultZone=http://192.168.1.11:8761/eureka
 ### Create Product Application
 
 - Inside main container choose new Module...
-- Dependencies: Web, Lombok, Eureka Client, postgresql
+- Dependencies: Web, Lombok, Eureka Client, postgresql, jpa
 - Add **@EnableDiscoveryClient** anotation into main application
 
 ```java

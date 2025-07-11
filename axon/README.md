@@ -1,20 +1,15 @@
 ## <h1 style="color:white;">Axon Platform (Axon Server and Framework)</h1>
 
+- [Config](axon-config.md)
 - [Sample](axon-sample.md)
 - [Multi Aggregate Sample](axon-multi-aggregate.md)
+- [Validation](validation.md)
 
-Axon Framework is a java framework that is used to simplify the building of event-driven microservices that are based on CQRS, Event-Sourcing and Domain-Driven Design. (without more config)
+Axon Framework is a java framework that is used to simplify the building of event-driven microservices that are based on CQRS, Event-Sourcing and Domain-Driven Design (without more config), but **Axon Server** duty is to manage Event-Bus and Event-Store.
 
-Axon Server duty is to manage Event-Bus and Event-Store.
+[CommandController](#productcommandcontroller) (with CommandGateway)-> [Aggregate](#productaggregate) (manage EventSourcing and Commands)
 
-Aggregate, Command, Event, Query
-
-Controller -(CommandGateway)-> Aggregate -(EventSourcing)-> Projection -(Repository)-> Query Database
-
-```dockerfile
-docker run -d --name axon-server -p 8024:8024 -p 8124:8124 axoniq/axonserver
-java -jar axonserver.jar
-```
+[QueryController](#productquerycontroller) (with queryGateway)-> [Projection](#productprojection-producteventhandler) (Handle Events and Queries)
 
 - [CommandController](#productcommandcontroller)
 - [Aggregate](#productaggregate)
@@ -22,7 +17,7 @@ java -jar axonserver.jar
 - [Projection](#productprojection-producteventhandler)
 - [Entity (View)](#productentity-productview)
 - [Repository](#productrepository)
-- [record](#record)
+- [Records](#records)
 - [Error Handling](#error-handling)
 - [Saga](#saga)
 - [DeadlineManager](#deadlinemanager)
@@ -175,16 +170,16 @@ to persist data
 public interface ProductRepository extends JpaRepository<ProductEntity, String>{}
 ```
 
-## record:
+## Records
 
+- CreateProductRequest:
+  - ProductCommandController: get @RequestBody
 - CreateProductCommand:
-  - **ProductAggregate**: to handle the command
   - **ProductCommandController**: to send then command
+  - **ProductAggregate**: to handle the command
 - ProductCreatedEvent
   - **ProductAggregate**: to handle in EventSourcingHandler
   - **ProductProjection**: to persist in to Query Database
-- CreateProductRequest:
-  - ProductCommandController: get request body
 
 for a command sample
 
