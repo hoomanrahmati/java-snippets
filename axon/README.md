@@ -172,6 +172,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String>{
 
 ## Records
 
+Don't use record it is incompatible instead user class
+
 - CreateProductRequest:
   - ProductCommandController: get @RequestBody
 - CreateProductCommand:

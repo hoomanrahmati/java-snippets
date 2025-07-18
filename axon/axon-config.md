@@ -2,9 +2,10 @@
 
 - Download axon program zip file and extract the file
 - Inside the extracted folder create config folder
-- create file inside config file axonserver.properties and set properties:
+- create file inside config file **axonserver.properties** and set properties:
 
 ```
+# inside axonserver.properties:
 server.port=8024
 axoniq.axonserver.name=My Axon Server
 axoniq.axonserver.hostname=localhost
