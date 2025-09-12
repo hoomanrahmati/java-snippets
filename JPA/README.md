@@ -6,4 +6,6 @@
 
 [CRUD](crud.md)
 
-[Relationship](relationship.md)
+[Relationship](relationship.md), [Relationship.v2](relationship.v2.md)
+
+[Query](queries.md)
