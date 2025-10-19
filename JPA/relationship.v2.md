@@ -485,3 +485,127 @@ insert into film (film_content_id,title,id) values (?,?,?)
 insert into film_content (description,id) values (?,?)
 insert into film (film_content_id,title,id) values (?,?,?)
 ```
+
+### enum
+
+```java
+@Entity
+@Table(name = "employee")
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    private EmployeeStatus status;
+    ...
+}
+```
+
+```java
+public enum EmployeeStatus {
+    FULL_TIME,
+    PART_TIME,
+    CONTRACT_TIME,
+}
+```
+
+```java
+  Employee e1 = new Employee("first emp", EmployeeStatus.FULL_TIME);
+  Employee e2 = new Employee("second emp", EmployeeStatus.PART_TIME);
+  Employee e3 = new Employee("third emp", EmployeeStatus.CONTRACT_TIME);
+
+  em.persist(e1);
+  em.persist(e2);
+  em.persist(e3);
+```
+
+```java
+  List<Employee> employees= em.createQuery("""
+      select e from Employee e
+  """, Employee.class).getResultList();
+  employees.forEach(System.out::println);
+```
+
+### Map Collection of Value or @Embeddable class
+
+- Collection of simple type
+
+```java
+@Entity
+@Table(name = "person_name")
+public class PersonName {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String fullName;
+
+    @ElementCollection
+    @CollectionTable(name = "person_name_nickname", joinColumns = @JoinColumn(name = "person_name_id"))
+    @Column(name="nickname")
+    private Set<String> nickNames=new HashSet<String>();
+    ...
+}
+```
+
+```java
+    PersonName p1 = new PersonName();
+    p1.setFullName("first name and last name");
+    p1.setEmail("first@email.com");
+
+    p1.getNickNames().add("first");
+    p1.getNickNames().add("second");
+    p1.getNickNames().add("third");
+
+    em.persist(p1);
+```
+
+person_name{id, fullname} (1)<-(\*) person_name_nickname{person_name_id, nickname}
+
+- Collection of embeddable class
+
+```java
+@Embeddable
+public class Task {
+    private String title;
+    private Integer duration;
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+    ...
+}
+
+```
+
+```java
+@Entity
+@Table(name="project")
+public class Project {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    private String name;
+
+    @ElementCollection
+    @CollectionTable(name = "project_task", joinColumns = @JoinColumn(name = "project_id"))
+    private Set<Task> tasks= new HashSet<Task>();
+    ...
+}
+```
+
+```java
+    Project p1 = new Project();
+    p1.setName("P2");
+    Task t1= new Task("t1-2", 5, TaskStatus.not_started);
+    Task t2= new Task("t2-2", 5, TaskStatus.in_progress);
+    Task t3= new Task("t3-2", 10, TaskStatus.completed);
+
+    p1.getTasks().add(t1);
+    p1.getTasks().add(t2);
+    p1.getTasks().add(t3);
+
+    em.persist(p1);
+```
+
+project{id, name} (1)<-(\*) task{project_id, title, duration, status}
