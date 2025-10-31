@@ -574,7 +574,14 @@ public class Task {
     private TaskStatus status;
     ...
 }
+```
 
+```java
+public enum TaskStatus {
+    not_started,
+    in_progress,
+    completed,
+}
 ```
 
 ```java
@@ -609,3 +616,350 @@ public class Project {
 ```
 
 project{id, name} (1)<-(\*) task{project_id, title, duration, status}
+
+### Composite Primary key
+
+```java
+@Embeddable
+public class ParentPrimaryKey implements Serializable {
+    private String firstName;
+    private String lastName;
+
+    ...
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        ParentPrimaryKey that = (ParentPrimaryKey) object;
+        return Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName);
+    }
+}
+```
+
+```java
+@Entity
+@Table(name = "parent_tbl")
+public class Parent {
+    @EmbeddedId
+    private ParentPrimaryKey id;
+
+    public Parent(){}
+    public Parent(ParentPrimaryKey id) {
+        this.id = id;
+    }
+
+    public ParentPrimaryKey getId() {
+        return id;
+    }
+
+    public void setId(ParentPrimaryKey id) {
+        this.id = id;
+    }
+
+}
+
+```
+
+```java
+  ParentPrimaryKey pk = new ParentPrimaryKey("John", "Smith");
+  Parent p1 = new Parent();
+  p1.setId(pk);
+  em.persist(p1);
+```
+
+### Composite Primary key(without @Embeddable)
+
+```java
+public class A implements Serializable {
+    private String firstName;
+    private String lastName;
+
+    ...
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        ParentPrimaryKey that = (ParentPrimaryKey) object;
+        return Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName);
+    }
+}
+```
+
+```java
+@IdClass(A.class)
+@Entity
+public class B {
+    @Id
+    private String firstName;
+
+    @Id
+    private String lastName;
+
+    private String address;
+    ...
+}
+
+```
+
+```java
+  Parent p1 = new Parent("John", "Doe", "Dehli");
+  em.persist(p1);
+```
+
+```java
+  Parent p = em.find(B.class, new A("John", "Doe"));
+```
+
+### Composite Primary Key and Composite Foreign Key
+
+```java
+@Embeddable
+public class ParentPrimaryKey implements Serializable {
+    private String firstName;
+    private String lastName;
+
+    public ParentPrimaryKey() {}
+    public ParentPrimaryKey(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+    ...
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        ParentPrimaryKey that = (ParentPrimaryKey) object;
+        return Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName);
+    }
+}
+```
+
+```java
+@Entity
+@Table(name = "parent_tbl")
+public class Parent {
+    @EmbeddedId
+    private ParentPrimaryKey id;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Child> children= new HashSet<Child>();
+
+    ...
+
+    public void addChild(Child child){
+        children.add(child);
+        child.setParent(this);
+    }
+
+}
+```
+
+```java
+@Entity
+@Table(name = "child_tbl")
+public class Child {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+    private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns(value = {@JoinColumn(name = "firstNamePk", referencedColumnName = "firstname"),
+            @JoinColumn(name = "lastNamePk", referencedColumnName = "lastname")}, foreignKey =@ForeignKey(name = "FKChild_parent_Parent"))
+    private Parent parent;
+    ...
+}
+```
+
+```java
+  ParentPrimaryKey pk = new ParentPrimaryKey("Jane", "Smith");
+  Parent p1 = new Parent(pk);
+
+  Child child1 = new Child();
+  Child child2 = new Child();
+  Child child3 = new Child();
+
+  child1.setName("Mamad");
+  child2.setName("Majid");
+  child3.setName("Mahmood");
+
+  p1.addChild(child1);
+  p1.addChild(child2);
+  p1.addChild(child3);
+
+  em.persist(p1);
+```
+
+```sql
+  insert into parent_tbl (firstName,lastName) values (?,?)
+  insert into child_tbl (name,firstNamePk,lastNamePk,id) values (?,?,?,?)
+  insert into child_tbl (name,firstNamePk,lastNamePk,id) values (?,?,?,?)
+  insert into child_tbl (name,firstNamePk,lastNamePk,id) values (?,?,?,?)
+```
+
+### Foreign Key in Composite Primary Key (using MapsId => Drived Identifier Mapping)
+
+```java
+@Entity
+@Table(name = "department_tbl")
+public class Department {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String name;
+    ...
+}
+```
+
+```java
+@Embeddable
+public class UserId implements Serializable {
+    private String username;
+    private Long departmentId;
+
+    public UserId() {}
+    public UserId(String username, Long departmentId) {
+        this.username = username;
+        this.departmentId = departmentId;
+    }
+    ...
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        UserId userId = (UserId) object;
+        return Objects.equals(username, userId.username) && Objects.equals(departmentId, userId.departmentId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username, departmentId);
+    }
+}
+```
+
+```java
+@Entity
+@Table(name="user_info")
+public class User {
+    @EmbeddedId
+    private UserId id;
+
+    private String email;
+
+    @ManyToOne
+    @JoinColumn(name = "department_fk_id")
+    @MapsId("departmentId") // this line ignoe the departmentId from the UserId class
+    private Department department;
+    ...
+}
+```
+
+```java
+  Department d1 = new Department();
+  d1.setName("Agriculture");
+  em.persist(d1);
+
+  // we can pass null instead of d1.getId()
+  User user= new User(new UserId("Majid", d1.getId()), "email@email.com");
+  // this line is mandatory
+  user.setDepartment(d1);
+  em.persist(user);
+```
+
+```sql
+ insert into department_tbl (name,id) values (?,?)
+ insert into user_info (email,department_fk_id,username) values (?,?,?)
+```
+
+### Mapping Json
+
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-core</artifactId>
+    <version>2.15.2</version>
+</dependency>
+
+<!-- Jackson Databind -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.15.2</version>
+</dependency>
+
+<!-- Jackson annotations (optional but recommended) -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-annotations</artifactId>
+    <version>2.15.2</version>
+</dependency>
+
+<!-- Hibernate specific Jackson integration -->
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+    <version>2.15.2</version>
+</dependency>
+```
+
+```java
+public class Specification {
+    private Integer ram;
+    private Integer internalMemory;
+    private String processor;
+
+    public Specification(Integer ram, Integer internalMemory, String processor) {
+        this.ram = ram;
+        this.internalMemory = internalMemory;
+        this.processor = processor;
+    }
+    // getters and setters are important!
+}
+```
+
+```java
+@Entity
+@Table(name="phone_tbl")
+public class Phone {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    private String name;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Specification specification;
+    ...
+}
+```
+
+```java
+    Phone p1 = new Phone("Zebra", new Specification(8, 8 , "Dragen"));
+    em.persist(p1);
+```
+
+```java
+    Phone p1 = em.find(Phone.class, 2L);
+    Specification s= p1.getSpecification();
+    System.out.println(p1);
+    System.out.println(s);
+```
