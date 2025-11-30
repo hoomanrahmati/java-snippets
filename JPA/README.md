@@ -6,6 +6,8 @@
 
 [CRUD](crud.md)
 
-[Relationship](relationship.md), [Relationship.v2](relationship.v2.md)
+[Relationship](relationship.md), [Relationship.v2](relationship.v2.md), [Inheritance](inheritance.md)
 
 [Query](queries.md)
+
+![Persistence Context](persistence_context.png)
