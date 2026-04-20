@@ -1,0 +1,1 @@
+FROM "D:\\hooman\\LLM\\Qwen3-14B-Uncensored.Q4_K_M.gguf"

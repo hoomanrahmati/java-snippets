@@ -330,32 +330,6 @@ insert into band_artist (Band_id,artists_id) values (?,?)
 insert into band_artist (Band_id,artists_id) values (?,?)
 ```
 
-### Embeddable class
-
-```java
-@Embeddable
-public class Address {
-  private String city;
-  private String street;
-  private String code;
-  ...
-}
-```
-
-```java
-public class Person {
-    ...
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "city", column = @Column(name = "address_city")),
-            @AttributeOverride(name="street", column = @Column(name="address_street")),
-            @AttributeOverride(name="code", column = @Column(name = "address_code"))
-    })
-    private Address address=new Address();
-    ...
-}
-```
-
 ### ManyToMany
 
 ```java
@@ -528,6 +502,32 @@ public enum EmployeeStatus {
   employees.forEach(System.out::println);
 ```
 
+### Embeddable class
+
+```java
+@Embeddable
+public class Address {
+  private String city;
+  private String street;
+  private String code;
+  ...
+}
+```
+
+```java
+public class Person {
+    ...
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "city", column = @Column(name = "address_city")),
+            @AttributeOverride(name="street", column = @Column(name="address_street")),
+            @AttributeOverride(name="code", column = @Column(name = "address_code"))
+    })
+    private Address address=new Address();
+    ...
+}
+```
+
 ### Map Collection of Value or @Embeddable class
 
 - Collection of simple type
@@ -673,7 +673,7 @@ public class Parent {
   em.persist(p1);
 ```
 
-### Composite Primary key(without @Embeddable)
+### Composite Primary key(without @EmbeddedId)
 
 ```java
 public class A implements Serializable {

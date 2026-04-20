@@ -1,4 +1,4 @@
-##JDBC
+## JDBC
 
 [back](../README.md)
 

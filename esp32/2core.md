@@ -1,3 +1,12 @@
+## Using 2 core sample (xTaskCreatePinnedToCore)
+
+- [back](./README.md)
+
+In this sketch
+
+- 97 is onboard RGB led
+- and pin 2 is connected wire the GND to simulate a key down.
+
 ```cpp
 void blinkLed(){
   while(1){
@@ -41,6 +50,6 @@ void setup() {
 }
 
 void loop() {
-  blinkLed();
+  blinkLed(); // run in CORE 0
 }
 ```
