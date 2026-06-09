@@ -184,6 +184,82 @@
 | `@EnableCircuitBreaker` | Enables Hystrix‑style circuit breaking (deprecated in Spring 6). |
 | `@EnableRetry`          | Enables retry logic for annotated methods.                       |
 
+### 🚀 Enable Retry in Your Application (spring-retry)
+
+Annotate your main application class or a configuration class with @EnableRetry:
+
+```xml
+<dependency>
+    <groupId>org.springframework.retry</groupId>
+    <artifactId>spring-retry</artifactId>
+    <version>2.0.12</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
+
+```java
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+@Slf4j
+public class ExternalApiService {
+
+    private final RestTemplate restTemplate;
+
+    public ExternalApiService() {
+        this.restTemplate = new RestTemplate();
+    }
+
+    /**
+     * Calls external API with retry and exponential backoff
+     * - Retries up to 3 times total (1 initial + 2 retries)
+     * - First retry after 1 second, second after 2 seconds (doubles each time)
+     * - Only retries on RuntimeException or specific exceptions
+     */
+    @Retryable(
+        value = {RuntimeException.class},
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 1000, multiplier = 2.0)
+    )
+    public String fetchDataFromApi(String endpoint) {
+        log.info("Attempting to call API at: {}", endpoint);
+
+        // Simulate API call that might fail
+        String url = "https://api.example.com/" + endpoint;
+
+        try {
+            // This will throw an exception for demonstration
+            // In real code, you'd call an actual API
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            log.error("API call failed: {}", e.getMessage());
+            throw new RuntimeException("External API error", e);
+        }
+    }
+
+    /**
+     * Recovery method called when all retry attempts fail
+     * Must have the same return type as the retryable method
+     */
+    @Recover
+    public String recover(RuntimeException e, String endpoint) {
+        log.error("All retry attempts failed for endpoint: {}", endpoint);
+        log.error("Last exception: {}", e.getMessage());
+
+        // Return a fallback/default value instead of failing
+        return "Default fallback data";
+    }
+}
+```
+
 ---
 
 ### 8️⃣ **Messaging (Spring AMQP / Kafka / JMS)**
@@ -228,6 +304,8 @@
 ---
 
 ### 🔟 **Miscellaneous / Advanced**
+
+[@Order](./details/miscellaneous.md)
 
 | Annotation                                         | What it does                                                        |
 | -------------------------------------------------- | ------------------------------------------------------------------- |

@@ -1,5 +1,7 @@
 ## Table of contents
 
+[kubectl](./kubectl/README.md)
+
 [Axon](axon/README.md)
 
 [Postgres](./postgres/README.md)

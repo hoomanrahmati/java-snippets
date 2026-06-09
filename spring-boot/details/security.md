@@ -303,13 +303,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
 ---
 
+## JWT token
+
 Below is a minimal “token‑only” setup that works with a React front‑end (or any SPA).  
 No internal login page, no form‑login – the front‑end posts **username/password** to a REST endpoint and receives a **JWT** that it stores locally (usually `localStorage` or `cookies`).  
 All subsequent API calls send the token in the `Authorization: Bearer …` header.
-
----
-
-## JWT token
 
 ## 1. Maven / Gradle dependencies
 

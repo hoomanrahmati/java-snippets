@@ -225,6 +225,17 @@ public class WindowsOnlyConfig {
 }
 ```
 
+```java
+@Service
+@ConditionalOnProperty(name = "cache.enabled", havingValue = "true")
+@ConditionalOnClass(RedisTemplate.class)
+public class RedisCacheService implements CacheService {
+    // Only loaded if:
+    // 1. cache.enabled=true in properties
+    // 2. RedisTemplate class exists on classpath
+}
+```
+
 > You can write any custom logic inside a `Condition` implementation and use it as an annotation.
 
 ---
@@ -258,20 +269,3 @@ public class LoggingAspect {
 
 > Turns on AOP support so that `@Aspect` classes can weave around your beans.  
 > Most starters (e.g., `spring-boot-starter-actuator`) enable this automatically, so you rarely need to add it yourself.
-
----
-
-### Quick sanity‑check
-
-| What you’ll usually put in the **main** class | Annotation(s)                                                 |
-| --------------------------------------------- | ------------------------------------------------------------- |
-| Entry point + auto‑config                     | `@SpringBootApplication`                                      |
-| Only the config section                       | `@EnableAutoConfiguration` (or inside a custom config)        |
-| Scanning non‑default packages                 | `@ComponentScan(basePackages=…)`                              |
-| Pull in separate modules                      | `@Import(...)`                                                |
-| Simple bean                                   | `@Bean`                                                       |
-| Bind `application.yml` values                 | `@ConfigurationProperties` + `@EnableConfigurationProperties` |
-| Add an external file                          | `@PropertySource`                                             |
-| Conditional beans                             | `@ConditionalOnMissingBean` or a custom `@Conditional`        |
-
-Now you can drop the annotation in your own classes and see the effect immediately. Happy coding!

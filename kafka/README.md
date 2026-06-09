@@ -2,7 +2,15 @@
 
 - [back](../README.md)
 
+- [Kraft](./kraft.md)
+
+- [More Command](./kafka-more-command-1.md)
+
 - [KSQL](./ksql.md)
+
+- [Stream](./kafka-stream1.md)
+
+- [Stateless and Stateful Stream Transformations ](./kafka-stream2.md)
 
 ### Bash Script
 
@@ -10,36 +18,84 @@
 
 ```bash
 %KAFKA_HOME%\bin\windows\zookeeper-server-start.bat %KAFKA_HOME%\config\zookeeper.properties
+
+# first go to %KAFKA_HOME% the run the following command
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
 ```
 
 - start kafka server (0, 1, 2)
 
 ```bash
 %KAFKA_HOME%\bin\windows\kafka-server-start.bat %KAFKA_HOME%\config\server-0.properties
+
+# first go to %KAFKA_HOME% the run the following command
+.\bin\windows\kafka-server-start.bat .\config\server-0.properties
 ```
 
 - create kafka topic
 
 ```bash
 %KAFKA_HOME%\bin\windows\kafka-topics.bat --create --topic stock-ticks --partitions 3 --replication-factor 1 --bootstrap-server localhost:9092
+
+# first go to %KAFKA_HOME% the run the following command
+.\bin\windows\kafka-topics.bat
+    --create --topic stock-ticks
+    --partitions 3
+    --replication-factor 1
+    --bootstrap-server localhost:9092
+
+# git bash
+./bin/kafka-topics.sh
+    --create --topic stock-ticks
+    --partitions 3
+    --replication-factor 1
+    --bootstrap-server localhost:9092
+```
+
+- list kafka topics
+
+```bash
+.\bin\windows\kafka-topics.bat --bootstrap-server localhost:9092 --list
+# inside git bash
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 ```
 
 - kafka producer (done with code or sending a file or send message in command)
+  (--bootstrap-server===--broker-list)
 
 ```bash
 %KAFKA_HOME%\bin\windows\kafka-console-producer.bat --topic stock-ticks --broker-list localhost:9092  < ..\data\sample1.csv
+
+# git bash
+$ ./bin/kafka-console-producer.sh --topic stock-ticks --bootstrap-server localhost:9092
 ```
 
 - kafka consumer (1, 2)
 
 ```bash
 %KAFKA_HOME%\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic stock-ticks --from-beginning --group my_group
+
+./bin/kafka-console-consumer.sh --topic stock-ticks --bootstrap-server localhost:9092 --from-beginning
+
+# from partition 1
+./bin/kafka-console-consumer.sh --topic stock-ticks --bootstrap-server localhost:9092 --from-beginning --partition 1
+
+# from partition 1 offset 2
+# --from-beginning === --offset 0
+# where offset is specified then partition is mandantory!
+./bin/kafka-console-consumer.sh
+    --topic stock-ticks
+    --bootstrap-server localhost:9092
+    --partition 1
+    --offset 2
 ```
 
 - describe topic
 
 ```bash
-%KAFKA_HOME%\bin\windows\kafka-topics.bat --describe  --zookeeper localhost:2181 --topic stock-ticks
+%KAFKA_HOME%\bin\windows\kafka-topics.bat --describe  --bootstrap-server localhost:9092 --topic stock-ticks
+# or with git bash
+$ ./bin/kafka-topics.sh --describe --bootstrap-server localhost:9092  --topic stock-ticks
 ```
 
 ### Simple Sending Message

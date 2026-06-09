@@ -183,7 +183,7 @@ g1.getStudents().add(s1); // don't set guide_id in student table
 em.persist(g1);
 ```
 
-- it just add student and a guide (student without guide_id). So whe need extra methode:
+- it just add student and a guide (student without guide_id). So we need extra methode:
 
 ```java
 public class Guide {
