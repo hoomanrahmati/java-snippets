@@ -112,6 +112,23 @@ spring-cloud-starter-netflix-eureka-client
 (spring-cloud-starter-gateway is going to be deprecated)
 ```
 
+```xml
+<!-- <version>3.5.3</version> -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webflux</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gateway-server-webflux</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+```
+
 - Inside application.properties:
 
 ```

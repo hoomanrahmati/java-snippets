@@ -380,3 +380,50 @@ public class Person {
     }
 }
 ```
+
+## @EntityGraph
+
+```java
+@Entity
+public class User {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Comment> comments;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department department;
+
+    // getters/setters
+}
+```
+
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    // ✅ No @NamedEntityGraph needed - just specify attribute paths
+    @EntityGraph(attributePaths = {"posts", "department"})
+    Optional<User> findByName(String name);
+
+    // ✅ Multiple attributes
+    @EntityGraph(attributePaths = {"posts", "comments"})
+    List<User> findAllByActiveTrue();
+
+    // ✅ Nested relationships (deep fetching)
+    @EntityGraph(attributePaths = {"posts", "posts.comments"})
+    List<User> findByDepartmentName(String deptName);
+
+    // ✅ Works with @Query too
+    @EntityGraph(attributePaths = {"posts"})
+    @Query("SELECT u FROM User u WHERE u.age > :age")
+    List<User> findAdultUsers(@Param("age") int age);
+
+}
+```
