@@ -10,4 +10,6 @@
 
 [Query](queries.md)
 
+[Master Detail](./mater-detail-entity.md)
+
 ![Persistence Context](persistence_context.png)

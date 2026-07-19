@@ -352,39 +352,108 @@ kubectl scale deployment -l tier=backend --replicas=4
 ```
 
 ```bash
+$ minikube start --driver=docker --registry-mirror=https://registry.cn-hangzhou.aliyuncs.com
+$ minikube addons list
+
+$ minikube addons enable registry
+
 
 ```
 
 ```bash
+$ minikube ssh
+>> nslookup registry.k8s.io
+>> curl -I https://registry.k8s.io/v2/
+```
+
+```bash
+$ docker info
+
+CONTAINER ID   NAME       CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O        PIDS
+e1a11f01a8d6   minikube   6.18%     601.1MiB / 3.777GiB   15.54%    464kB / 1.87MB   4.1kB / 9.86MB   389
+
 
 ```
 
 ```bash
+# Keep this terminal open with the port-forwarding running:
+minikube service registry -n kube-system --url
+
+# Set docker to use minikube's docker daemon
+eval $(minikube -p minikube docker-env)
+# Exit minikube's docker environment
+# $ eval $(minikube -p minikube docker-env -u)
+
+# Build your image
+docker build -t rest-api:1.0.0 .
+
+# Tag it for the registry (using one of the ports)
+docker tag rest-api:1.0.0 localhost:61559/rest-api:1.0.0
+
+# Push it
+docker push localhost:61559/rest-api:1.0.0
+
+# Now use it in your pod
+kubectl run test-pod --image=localhost:61559/rest-api:1.0.0
+```
+
+### Load image from docker into minikube
+
+```bash
+$ minikube image load rest-api:1.0.0
+```
+
+```bash
+$ minikube image ls
 
 ```
 
 ```bash
+$ kubectl run rest-api-test --image=rest-api:1.0.0 --image-pull-policy=Never
+# pod/rest-api-test created
+
+$ kubectl get pods
+
+NAME            READY   STATUS    RESTARTS       AGE
+nginx-pod       1/1     Running   15 (39m ago)   14d
+rest-api-test   1/1     Running   0              8s
+web             1/1     Running   0              22m
+
+$ kubectl logs rest-api-test
+
+$ kubectl expose pod rest-api-test --type=LoadBalancer --port=8087
+# service/rest-api-test exposed
+
+$ minikube service rest-api-test --url
+# http://127.0.0.1:50164
+# ! Because you are using a Docker driver on windows, the terminal needs to be open to run it.
+
+...
+
+
 
 ```
 
 ```bash
+$ minikube service rest-api-test --url
+# kubectl port-forward service/rest-api-test 8080:8080
 
 ```
 
-```bash
-
-```
+- Option 3: Using NodePort (No terminal needed)
 
 ```bash
+# Change your service to NodePort
+kubectl edit svc rest-api-test
+# Change type: ClusterIP to type: NodePort
 
-```
+# Get the node port
+kubectl get svc rest-api-test
+# Example output: 8080:31234/TCP
 
-```bash
-
-```
-
-```bash
-
+# Access via minikube IP
+minikube ip  # Get the IP, e.g., 192.168.49.2
+# Access: http://192.168.49.2:31234
 ```
 
 ```bash
