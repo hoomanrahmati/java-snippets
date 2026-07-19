@@ -6,6 +6,7 @@
 - [Sample](axon-sample.md)
 - [Multi Aggregate Sample](axon-multi-aggregate.md)
 - [Validation](validation.md)
+- [Gateway and Euereka Discovery Service](./gateway-eureka/README.md)
 
 Axon Framework is a java framework that is used to simplify the building of event-driven microservices that are based on CQRS, Event-Sourcing and Domain-Driven Design (without more config), but **Axon Server** duty is to manage Event-Bus and Event-Store.
 

@@ -2,13 +2,11 @@
 
 [back](../README.md)
 
-[config](config-hibernate.md)
+[Relationship](relationship.v2.md)
+
+[Inheritance](inheritance.md)
 
 [CRUD](crud.md)
-
-[Relationship](relationship.md), [Relationship.v2](relationship.v2.md), [Inheritance](inheritance.md)
-
-[Query](queries.md)
 
 [Master Detail](./mater-detail-entity.md)
 
