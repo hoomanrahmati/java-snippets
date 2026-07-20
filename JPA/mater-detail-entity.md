@@ -2,6 +2,12 @@
 
 [back](./README.md)
 
+[CRUD](#2crud)
+
+[More](#3more)
+
+# 1
+
 This is a very common interview and real-world scenario because it demonstrates:
 
 - One-to-Many relationship
@@ -507,7 +513,9 @@ This keeps both sides of the bidirectional relationship synchronized and avoids 
 
 ---
 
-Certainly. In fact, **Create + Update + Delete** demonstrates some of the most important JPA concepts:
+# 2(CRUD)
+
+**Create + Update + Delete** demonstrates some of the most important JPA concepts:
 
 - Persistence Context
 - Managed vs Detached entities
@@ -919,3 +927,643 @@ With `orphanRemoval = true`, any removed item is automatically deleted. This app
 - Unchanged items are left untouched.
 
 This is the approach you'll typically see in production applications because it preserves child IDs, reduces unnecessary SQL, and avoids breaking references from other tables.
+
+---
+
+# 3(More)
+
+The previous code is good for learning JPA, but in a real project there are several things we'd improve.
+
+---
+
+# Production Architecture
+
+A typical layered architecture looks like this:
+
+```text
+Controller
+      │
+      ▼
+Request DTO
+      │
+      ▼
+MapStruct
+      │
+      ▼
+Service
+      │
+      ▼
+Repository
+      │
+      ▼
+Database
+
+             ▲
+             │
+        Response DTO
+             ▲
+             │
+         MapStruct
+```
+
+Notice something:
+
+> **The service should not know about HTTP or JSON.**
+
+The service works with domain objects and repositories. The controller deals with requests and responses.
+
+---
+
+# Project Structure
+
+```text
+controller/
+    InvoiceController
+
+dto/
+    request/
+        CreateInvoiceRequest
+        UpdateInvoiceRequest
+        InvoiceItemRequest
+
+    response/
+        InvoiceResponse
+        InvoiceItemResponse
+
+mapper/
+    InvoiceMapper
+
+entity/
+    Invoice
+    InvoiceItem
+
+repository/
+    InvoiceRepository
+
+service/
+    InvoiceService
+
+exception/
+    InvoiceNotFoundException
+
+config/
+```
+
+This is much closer to what you'll find in production.
+
+---
+
+# Why Use MapStruct?
+
+Without MapStruct:
+
+```java
+Invoice invoice = new Invoice();
+
+invoice.setCustomerName(dto.getCustomerName());
+invoice.setTotal(dto.getTotal());
+
+...
+```
+
+Every service becomes filled with repetitive mapping code.
+
+Imagine you have
+
+- Customer
+- Product
+- Order
+- Invoice
+- Employee
+- Warehouse
+
+You'll write thousands of lines like
+
+```java
+entity.setX(dto.getX());
+entity.setY(dto.getY());
+entity.setZ(dto.getZ());
+```
+
+This is boring, error-prone, and hard to maintain.
+
+---
+
+With MapStruct
+
+```java
+Invoice invoice = mapper.toEntity(dto);
+```
+
+Done.
+
+---
+
+# Example DTO
+
+```java
+public class CreateInvoiceRequest {
+
+    private String customerName;
+
+    private List<InvoiceItemRequest> items;
+
+}
+```
+
+---
+
+# Entity
+
+```java
+@Entity
+public class Invoice {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String customerName;
+
+    private BigDecimal totalAmount;
+
+    @OneToMany(...)
+    private List<InvoiceItem> items;
+
+}
+```
+
+---
+
+# MapStruct Mapper
+
+```java
+@Mapper(componentModel = "spring")
+public interface InvoiceMapper {
+
+    Invoice toEntity(CreateInvoiceRequest dto);
+
+    InvoiceResponse toResponse(Invoice invoice);
+
+    InvoiceItem toEntity(InvoiceItemRequest dto);
+
+    InvoiceItemResponse toResponse(InvoiceItem item);
+
+    List<InvoiceItemResponse> toResponse(List<InvoiceItem> items);
+
+}
+```
+
+No implementation.
+
+MapStruct generates it during compilation.
+
+---
+
+Then
+
+```java
+@Service
+@RequiredArgsConstructor
+public class InvoiceService {
+
+    private final InvoiceRepository repository;
+    private final InvoiceMapper mapper;
+
+    @Transactional
+    public InvoiceResponse create(CreateInvoiceRequest request){
+
+        Invoice invoice = mapper.toEntity(request);
+
+        invoice.getItems()
+               .forEach(item -> item.setInvoice(invoice));
+
+        calculateTotal(invoice);
+
+        repository.save(invoice);
+
+        return mapper.toResponse(invoice);
+
+    }
+
+}
+```
+
+Very clean.
+
+---
+
+# Wait...
+
+There is still this
+
+```java
+invoice.getItems()
+       .forEach(item -> item.setInvoice(invoice));
+```
+
+Can MapStruct do this?
+
+Yes.
+
+---
+
+## AfterMapping
+
+```java
+@Mapper(componentModel = "spring")
+public interface InvoiceMapper {
+
+    Invoice toEntity(CreateInvoiceRequest dto);
+
+    @AfterMapping
+    default void linkChildren(
+            @MappingTarget Invoice invoice){
+
+        invoice.getItems()
+               .forEach(item -> item.setInvoice(invoice));
+
+    }
+
+}
+```
+
+Now service becomes
+
+```java
+Invoice invoice = mapper.toEntity(dto);
+
+repository.save(invoice);
+```
+
+Even cleaner.
+
+---
+
+# Updating with MapStruct
+
+Most beginners do
+
+```java
+Invoice invoice = mapper.toEntity(updateDto);
+
+repository.save(invoice);
+```
+
+Don't do this.
+
+This is one of the biggest mistakes.
+
+Why?
+
+Because you've created a **new detached entity**.
+
+You lose
+
+- Persistence Context
+- Dirty Checking
+- Lazy Collections
+- Existing children
+- Optimistic Lock version
+
+Instead
+
+```java
+Invoice invoice = repository.findById(id)
+        .orElseThrow();
+```
+
+Now invoice is Managed.
+
+Then
+
+```java
+mapper.updateInvoice(updateDto, invoice);
+```
+
+Notice
+
+**existing object**
+
+not
+
+**new object**
+
+---
+
+MapStruct
+
+```java
+@Mapper(componentModel = "spring")
+public interface InvoiceMapper {
+
+    void updateInvoice(
+            UpdateInvoiceRequest dto,
+            @MappingTarget Invoice invoice);
+
+}
+```
+
+Generated code
+
+```java
+invoice.setCustomerName(dto.getCustomerName());
+
+invoice.setDate(dto.getDate());
+
+...
+```
+
+Only updates fields.
+
+No new object.
+
+This is exactly what we want.
+
+---
+
+# Ignore IDs
+
+Production applications almost always ignore IDs during mapping.
+
+```java
+@Mapper(componentModel = "spring")
+public interface InvoiceMapper {
+
+    @Mapping(target="id",ignore=true)
+    Invoice toEntity(CreateInvoiceRequest dto);
+
+}
+```
+
+Otherwise
+
+someone could send
+
+```json
+{
+  "id": 100
+}
+```
+
+You don't want that.
+
+---
+
+# Ignore Calculated Fields
+
+Suppose
+
+```java
+Invoice
+
+id
+
+customerName
+
+totalAmount
+```
+
+Total is calculated.
+
+Never trust client.
+
+Ignore it.
+
+```java
+@Mapping(target="totalAmount",ignore=true)
+```
+
+Then
+
+```java
+calculateTotal(invoice);
+```
+
+---
+
+# Production Update
+
+Instead of deleting all children
+
+```java
+invoice.getItems().clear();
+```
+
+A production application usually
+
+```
+Load Invoice
+
+↓
+
+Map existing items by ID
+
+↓
+
+Update existing
+
+↓
+
+Insert new
+
+↓
+
+Delete removed
+```
+
+Exactly like Git.
+
+```
+Old
+
+A
+
+B
+
+C
+
+New
+
+A
+
+B(updated)
+
+D
+```
+
+Result
+
+```
+UPDATE B
+
+INSERT D
+
+DELETE C
+```
+
+Instead of
+
+```
+DELETE A
+
+DELETE B
+
+DELETE C
+
+INSERT A
+
+INSERT B
+
+INSERT D
+```
+
+Huge performance improvement.
+
+---
+
+# Validation
+
+Controller
+
+```java
+@PostMapping
+public InvoiceResponse create(
+        @Valid
+        @RequestBody CreateInvoiceRequest dto){
+
+    return service.create(dto);
+
+}
+```
+
+DTO
+
+```java
+public class CreateInvoiceRequest {
+
+    @NotBlank
+    private String customerName;
+
+    @NotEmpty
+    private List<InvoiceItemRequest> items;
+
+}
+```
+
+Item
+
+```java
+public class InvoiceItemRequest {
+
+    @NotBlank
+    private String productName;
+
+    @Positive
+    private Integer quantity;
+
+    @Positive
+    private BigDecimal price;
+
+}
+```
+
+Never validate inside service.
+
+Validation belongs to the API boundary.
+
+---
+
+# Exceptions
+
+Instead of
+
+```java
+throw new RuntimeException();
+```
+
+Create
+
+```java
+public class InvoiceNotFoundException
+        extends RuntimeException{
+}
+```
+
+Then
+
+```java
+@ControllerAdvice
+```
+
+returns
+
+```json
+{
+  "message": "Invoice not found",
+  "status": 404,
+  "timestamp": "..."
+}
+```
+
+---
+
+# Production Service
+
+Notice how little code is left.
+
+```java
+@Transactional
+public InvoiceResponse create(CreateInvoiceRequest dto){
+
+    Invoice invoice = mapper.toEntity(dto);
+
+    calculateTotal(invoice);
+
+    repository.save(invoice);
+
+    return mapper.toResponse(invoice);
+
+}
+```
+
+This is close to what you'll see in many enterprise Spring Boot applications.
+
+## Some additional production considerations
+
+As applications grow, teams often add a few more patterns:
+
+- **Separate request and response DTOs.** Request DTOs model what clients are allowed to send; response DTOs model what you want to expose. This prevents accidentally exposing internal fields such as `version`, `createdAt`, or database IDs.
+- **Audit fields.** A common base entity contains `createdAt`, `updatedAt`, `createdBy`, and `lastModifiedBy`, populated automatically with Spring Data JPA auditing.
+- **Optimistic locking.** Add an `@Version` field to entities like `Invoice` to prevent users from overwriting each other's changes.
+- **Soft deletes.** Instead of physically deleting an invoice, many business systems mark it as deleted (`deleted = true` or `deletedAt`) for auditing and recovery.
+- **Pagination and projections.** Listing invoices usually returns lightweight DTOs rather than full entities with all items loaded.
+- **Avoid exposing entities directly.** Returning JPA entities from controllers can lead to lazy-loading exceptions, circular references, and leaking internal implementation details.
+- **Transactional boundaries.** Controllers should typically not be `@Transactional`; transactions belong in the service layer where business logic executes.
+- **Fetch strategies.** Keep associations `LAZY` by default and use `JOIN FETCH`, entity graphs, or dedicated queries when related data is actually needed.
+
+---
+
+## A note about MapStruct
+
+MapStruct excels at **simple, deterministic mapping**:
+
+- DTO ↔ Entity
+- Entity → Response DTO
+- Updating scalar fields with `@MappingTarget`
+
+It's generally **not** the right place for business rules such as:
+
+- Calculating invoice totals
+- Validating stock availability
+- Applying discounts
+- Persisting entities
+- Calling external services
+
+A good rule of thumb is:
+
+- **MapStruct:** "How do I copy data from one object to another?"
+- **Service:** "What business decisions should be made?"
+- **Repository:** "How is the data stored and retrieved?"
+
+Keeping those responsibilities separate makes the codebase easier to test, maintain, and evolve as the application grows.
