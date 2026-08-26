@@ -2,6 +2,8 @@
 
 [back](../README.md)
 
+[kubectl with kind](./virs.guru/virs.guru.md) 
+
 ```bash
 source <(kubectl completion bash)
 ```

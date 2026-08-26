@@ -20,6 +20,8 @@
 
 [Bash](./bash/README.md)
 
+[Terraform](./terraform/README.md)
+
 [LLM](./LLM/README.md)
 
 [ESP32](./esp32/README.md)

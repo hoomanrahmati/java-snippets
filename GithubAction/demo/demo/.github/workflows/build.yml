@@ -1,0 +1,51 @@
+name: First CI
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  myFirstJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: My first action
+        uses: actions/checkout@v6
+
+#      - name: My first step
+#        run: printenv
+#
+#      - name: My second step
+#        run: |
+#          echo "Hello Amigo" > file.txt
+#          echo "hello world"
+#          cat file.txt
+#          ls
+#
+#      - name: My third step
+#        run: |
+#          sleep 5
+#          echo $GITHUB_TRIGGERING_ACTOR
+#          echo "finished"
+#      - name: ls repo
+#        run: |
+#          ls
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: mvn clean verify
+        run: |
+          mvn clean verify
+#      - name: Test Java
+#        run: |
+#          java --version
+#          mvn --version
+#
+#      - run: |
+#          echo "java home:"
+#          echo "$JAVA_HOME"
+          
+        
+
+      
