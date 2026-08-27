@@ -1,0 +1,95 @@
+{
+  "version": 4,
+  "terraform_version": "1.15.8",
+  "serial": 40,
+  "lineage": "1cb02887-4953-c9ed-646c-db529c69f73d",
+  "outputs": {
+    "hello": {
+      "value": "hello world",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "terraform_data",
+      "name": "some_data",
+      "provider": "provider[\"terraform.io/builtin/terraform\"]",
+      "instances": [
+        {
+          "index_key": 1,
+          "schema_version": 0,
+          "attributes": {
+            "id": "4655260e-94ca-26ca-9a51-18f398050212",
+            "input": {
+              "value": "hello 1",
+              "type": "string"
+            },
+            "output": {
+              "value": "hello 1",
+              "type": "string"
+            },
+            "triggers_replace": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        },
+        {
+          "index_key": 2,
+          "schema_version": 0,
+          "attributes": {
+            "id": "42bccfbf-0eef-8e70-7ae4-ba99282c48b8",
+            "input": {
+              "value": "hello 2",
+              "type": "string"
+            },
+            "output": {
+              "value": "hello 2",
+              "type": "string"
+            },
+            "triggers_replace": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        },
+        {
+          "index_key": 3,
+          "schema_version": 0,
+          "attributes": {
+            "id": "ec573713-e7b1-8272-aeea-3e614cd3c5f3",
+            "input": {
+              "value": "hello 3",
+              "type": "string"
+            },
+            "output": {
+              "value": "hello 3",
+              "type": "string"
+            },
+            "triggers_replace": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        },
+        {
+          "index_key": 4,
+          "schema_version": 0,
+          "attributes": {
+            "id": "d2aefe2d-275b-f2ea-8e9b-df362eae63d2",
+            "input": {
+              "value": "hello 4",
+              "type": "string"
+            },
+            "output": {
+              "value": "hello 4",
+              "type": "string"
+            },
+            "triggers_replace": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
