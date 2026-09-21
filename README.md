@@ -1,5 +1,7 @@
 ## Cheat Sheet
 
+[Architecture](architecture/README.md)
+
 [Spring Boot](spring-boot/README.md)
 
 [Spring Cloud Gateway](./spring-cloud-gateway/README.md)
@@ -25,7 +27,3 @@
 [LLM](./LLM/README.md)
 
 [ESP32](./esp32/README.md)
-
----
-
-test1
