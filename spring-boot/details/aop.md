@@ -3,7 +3,7 @@
 [back](../README.md)
 
 Spring Boot brings **Spring AOP** to your project automatically once you add
-`spring-boot-starter-aop`.  
+`spring-boot-starter-aop (spring-boot-starter-aspectj for version 4)`.  
 The framework will wire the aspects for you, but you still need to
 annotate your classes and methods correctly.
 
@@ -179,12 +179,12 @@ public class DemoAspect {
         System.out.println("[AFTER] " + jp.getSignature());
     }
 
-    @AfterReturning(pointcut = "serviceLayer()", returning = "retVal")
+    @AfterReturning(value = "serviceLayer()", returning = "retVal")
     public void afterReturningAdvice(Object retVal) {
         System.out.println("[AFTER RETURNING] " + retVal);
     }
 
-    @AfterThrowing(pointcut = "serviceLayer()", throwing = "ex")
+    @AfterThrowing(value = "serviceLayer()", throwing = "ex")
     public void afterThrowingAdvice(Exception ex) {
         System.out.println("[AFTER THROWING] " + ex.getMessage());
     }
